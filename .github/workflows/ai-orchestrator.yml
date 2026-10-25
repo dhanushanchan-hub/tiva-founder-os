@@ -1,0 +1,68 @@
+name: AI Agent Orchestrator
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      agent:
+        type: choice
+        description: 'Which AI agent to run'
+        options:
+          - claude
+          - codex
+          - both
+        default: 'claude'
+      prompt:
+        type: string
+        description: 'Prompt for the agent'
+        required: false
+jobs:
+  orchestrator:
+    if: |
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'issue_comment' && (contains(github.event.comment.body, '@claude') || contains(github.event.comment.body, '@codex') || contains(github.event.comment.body, '@ai'))) ||
+      (github.event_name == 'pull_request_review_comment' && (contains(github.event.comment.body, '@claude') || contains(github.event.comment.body, '@codex') || contains(github.event.comment.body, '@ai'))) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.body, '@codex') || contains(github.event.issue.body, '@ai') || contains(github.event.issue.title, '@claude') || contains(github.event.issue.title, '@codex') || contains(github.event.issue.title, '@ai')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    strategy:
+      matrix:
+        agent: [claude, codex]
+        include:
+          - agent: claude
+            trigger: '@claude'
+          - agent: codex
+            trigger: '@codex'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Claude Code
+        if: matrix.agent == 'claude' && (github.event_name == 'workflow_dispatch' || contains(github.event.comment.body, '@claude') || contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: ${{ github.event.inputs.prompt || github.event.comment.body || github.event.issue.body }}
+
+      - name: Run Codex
+        if: matrix.agent == 'codex' && (github.event_name == 'workflow_dispatch' || contains(github.event.comment.body, '@codex') || contains(github.event.issue.body, '@codex') || contains(github.event.issue.title, '@codex'))
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          npx -y @openai/codex exec --full-auto --prompt "${{ github.event.inputs.prompt || github.event.comment.body || github.event.issue.body }}" 2>&1 | head -1000

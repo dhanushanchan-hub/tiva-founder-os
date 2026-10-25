@@ -1,0 +1,58 @@
+name: GitHub Copilot
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+jobs:
+  copilot-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Copilot Code Review
+        uses: github/copilot-code-review-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  copilot-chat:
+    if: |
+      github.event_name == 'issue_comment' && contains(github.event.comment.body, '@copilot')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Copilot Chat
+        uses: github/copilot-chat-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: ${{ github.event.comment.body }}
+
+  copilot-workflow-dispatch:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Copilot Generate
+        uses: github/copilot-chat-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: ${{ github.event.inputs.prompt }}
