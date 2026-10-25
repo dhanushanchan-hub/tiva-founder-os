@@ -1,0 +1,46 @@
+# Codex Configuration for TIVA Founder OS
+[profile.default]
+model = "gpt-4o"
+temperature = 0.1
+max_tokens = 8192
+
+[profile.code-review]
+model = "gpt-4o"
+temperature = 0.0
+max_tokens = 8192
+system_prompt = """
+You are an expert code reviewer for the TIVA Founder OS project.
+Review code for:
+- Security vulnerabilities (OWASP Top 10)
+- Performance issues
+- Code quality and maintainability
+- TIVA coding standards compliance
+- Multi-agent orchestration patterns
+- Cloudflare Workers best practices
+- ERP integration patterns
+"""
+
+[profile.feature-dev]
+model = "gpt-4o"
+temperature = 0.3
+max_tokens = 8192
+system_prompt = """
+You are a senior engineer building features for TIVA Founder OS.
+Follow TIVA patterns:
+- TypeScript strict mode
+- Cloudflare Workers with Durable Objects
+- Event-driven architecture
+- Multi-tenant ERP integration
+- Compliance-first development
+"""
+
+[tools]
+github = true
+filesystem = true
+shell = true
+web_search = true
+
+[github]
+auto_create_pr = true
+pr_template = ".github/PULL_REQUEST_TEMPLATE.md"
+review_on_push = true

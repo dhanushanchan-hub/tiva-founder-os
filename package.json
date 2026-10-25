@@ -1,0 +1,61 @@
+{
+  "name": "tiva-founder-os",
+  "version": "1.0.0",
+  "description": "Multi-agent AI orchestration platform for TIVA ecosystem",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "workers/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev:workers\" \"npm:dev:apps\"",
+    "dev:workers": "wrangler dev --port 8787",
+    "dev:apps": "npm run dev --workspace=apps",
+    "build": "npm run build --workspaces",
+    "build:workers": "npm run build --workspace=workers",
+    "build:apps": "npm run build --workspace=apps",
+    "test": "npm run test --workspaces",
+    "test:unit": "npm run test:unit --workspaces",
+    "test:integration": "npm run test:integration --workspaces",
+    "test:e2e": "playwright test",
+    "lint": "npm run lint --workspaces",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md,yaml,yml}\"",
+    "typecheck": "npm run typecheck --workspaces",
+    "deploy:workers": "npm run deploy --workspace=workers",
+    "deploy:apps": "npm run deploy --workspace=apps",
+    "setup:all": "npm install && npm run setup:git && npm run setup:hooks",
+    "setup:git": "git config core.hooksPath .githooks",
+    "setup:hooks": "chmod +x .githooks/*",
+    "db:migrate": "npm run db:migrate --workspaces",
+    "db:seed": "npm run db:seed --workspaces",
+    "generate:types": "npm run generate:types --workspaces",
+    "codex:review": "codex exec --full-auto --prompt \"Review the latest changes for security, performance, and code quality\"",
+    "codex:feature": "codex exec --full-auto --prompt \"Implement the feature described in the issue\"",
+    "claude:review": "claude --review",
+    "orchestrator:start": "node scripts/orchestrator.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "concurrently": "^8.2.0",
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.2.0",
+    "vitest": "^1.0.0",
+    "wrangler": "^3.0.0",
+    "@cloudflare/workers-types": "^4.20230000.0",
+    "playwright": "^1.40.0",
+    "@playwright/test": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "packageManager": "npm@10.0.0",
+  "volta": {
+    "node": "20.10.0",
+    "npm": "10.0.0"
+  }
+}
